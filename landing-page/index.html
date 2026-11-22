@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="en">
+
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>DrainWatch</title>
+		<meta name="description" content="DrainWatch reads the water level in drains and canals and warns residents and councils before a street floods.">
+		<meta property="og:title" content="DrainWatch — flood warnings from the drain up">
+		<meta property="og:description" content="Low-cost sensors warn residents and councils before a street floods.">
+		<meta property="og:image" content="https://nethu-wq.github.io/drainwatch/image.jpg">
+		<meta name="twitter:card" content="summary_large_image">
+		<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8.5' fill='%230a8f9c'/%3E%3Cpath transform='translate(7 7) scale(.75)' d='M4 15h16M8 11v4M12 8v7M16 11v4' fill='none' stroke='%23fff' stroke-width='2.3' stroke-linecap='round'/%3E%3C/svg%3E">
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+		<style>
+			:root {
+				--ink: #13262d;
+				--muted: #5a727b;
+				--line: #e4ecee;
+				--wash: #f1f6f7;
+				--teal: #0a8f9c;
+				--teal-dark: #076570;
+				--deep: #0d2a32;
+				--deep-2: #124150;
+				--safe: #2f9e78;
+				--warn: #e0982a;
+				--threat: #d0402f;
+				--shadow: 0 14px 34px -16px #0d2a3273;
+				--radius: 14px;
+			}
+			
+			* {
+				box-sizing: border-box;
+			}
+			
+			body {
+				margin: 0;
+				font-family: Manrope, system-ui, sans-serif;
+				color: var(--ink);
+				line-height: 1.6;
+			}
+			
+			h1,
+			h2,
+			h3 {
+				line-height: 1.15;
+				margin: 0 0 0.4em;
+				letter-spacing: -0.02em;
+			}
+			
+			h1,
+			h2 {
+				font-weight: 800;
+			}
+
+			h1 {
+				font-size: clamp(2.2rem, 5vw, 3.4rem);
+			}
+
+			h2 {
+				font-size: clamp(1.6rem, 3vw, 2.2rem);
+			}
+			
+			h3 {
+				font-size: 1.12rem;
+			}
+			
+			p {
+				margin: 0 0 1rem;
+			}
+			
+			a {
+				color: var(--teal-dark);
+				text-decoration: none;
+			}
+			
+			a:hover {
+				text-decoration: underline;
+			}
+			
+			:focus-visible {
+				outline: 3px solid var(--teal);
+				outline-offset: 2px;
+			}
+			
+			section {
+				padding: 68px 0;
+			}
+			
+			.wrap {
+				max-width: 1100px;
+				margin: 0 auto;
+				padding: 0 22px;
+			}
+			
+			.wash {
+				background: var(--wash);
+			}
+			
+			.label {
+				color: var(--teal-dark);
+				font-weight: 700;
+				font-size: 0.82rem;
+				letter-spacing: 0.06em;
+				margin-bottom: 12px;
+			}
+			
+			.btn {
+				display: inline-block;
+				background: var(--teal);
+				color: #fff;
+				font: inherit;
+				font-weight: 700;
+				padding: 13px 24px;
+				border: 0;
+				border-radius: 9px;
+				cursor: pointer;
+				transition: background 0.15s;
+			}
+			
+			.btn:hover {
+				background: var(--teal-dark);
+				text-decoration: none;
+			}
+			
+			.btn.ghost {
+				background: none;
+				border: 1.5px solid #ffffff4d;
+				color: #eaf2f3;
+			}
+			
+			.btn.light {
+				background: #fff;
+				color: var(--deep);
+			}
+			
+			.btn.light:hover {
+				background: #e6f4f6;
+			}
+			
+			header {
+				position: sticky;
+				top: 0;
+				z-index: 10;
+				background: #ffffffeb;
+				backdrop-filter: blur(8px);
+				border-bottom: 1px solid var(--line);
+			}
+			
+			.nav {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				height: 66px;
+			}
+			
+			.brand {
+				display: flex;
+				align-items: center;
+				gap: 9px;
+				font-weight: 800;
+				font-size: 1.2rem;
+			}
+			
+			.mark {
+				width: 30px;
+				height: 30px;
+				border-radius: 8px;
+				background: var(--teal);
+				display: grid;
+				place-items: center;
+			}
+			
+			nav a {
+				margin-left: 24px;
+			}
+			
+			nav a:not(.btn) {
+				color: var(--ink);
+				font-weight: 500;
+			}
+			
+			.hero {
+				background: linear-gradient(165deg, var(--deep), var(--deep-2));
+				color: #eaf2f3;
+				padding: 72px 0 84px;
+			}
+			
+			.hero h1,
+			.hero h2 {
+				color: #fff;
+			}
+			
+			.hero .label {
+				color: #5fd0dd;
+			}
+			
+			.sub {
+				color: #b7d2d7;
+				font-size: 1.18rem;
+				max-width: 33ch;
+				margin-bottom: 28px;
+			}
+			
+			.actions {
+				display: flex;
+				gap: 12px;
+				flex-wrap: wrap;
+			}
+			
+			.split {
+				display: grid;
+				grid-template-columns: 1.1fr 0.9fr;
+				gap: 48px;
+				align-items: center;
+			}
+			
+			.reader {
+				background: #fff;
+				color: var(--ink);
+				border-radius: 18px;
+				padding: 22px;
+				box-shadow: var(--shadow);
+			}
+			
+			.reader-top {
+				display: flex;
+				justify-content: space-between;
+				font-size: 0.85rem;
+				color: var(--muted);
+				border-bottom: 1px solid var(--line);
+				padding-bottom: 12px;
+				margin-bottom: 16px;
+			}
+			
+			.reader-top b {
+				color: var(--ink);
+			}
+			
+			.reading {
+				display: flex;
+				align-items: baseline;
+				gap: 8px;
+				margin-bottom: 14px;
+			}
+			
+			.num {
+				font-size: 3rem;
+				font-weight: 800;
+				letter-spacing: -0.03em;
+			}
+			
+			.unit {
+				color: var(--muted);
+				font-weight: 600;
+			}
+			
+			.tag {
+				margin-left: auto;
+				align-self: center;
+				background: var(--warn);
+				color: #2a1a02;
+				font-weight: 700;
+				font-size: 0.78rem;
+				padding: 5px 12px;
+				border-radius: 7px;
+			}
+			
+			.bar {
+				position: relative;
+				height: 12px;
+				margin: 6px 0 8px;
+				border-radius: 7px;
+				background: var(--wash);
+				overflow: hidden;
+			}
+			
+			.bar span {
+				position: absolute;
+				inset: 0 58% 0 0;
+				border-radius: 7px;
+				background: linear-gradient(90deg, var(--teal), #17b6c6);
+			}
+			
+			.bar::before,
+			.bar::after {
+				content: "";
+				position: absolute;
+				top: -3px;
+				width: 2px;
+				height: 18px;
+				background: var(--ink);
+				opacity: 0.35;
+			}
+			
+			.bar::before {
+				left: 40%;
+			}
+			
+			.bar::after {
+				left: 70%;
+			}
+			
+			.scale {
+				position: relative;
+				height: 1.2em;
+				font-size: 0.72rem;
+				color: var(--muted);
+			}
+			
+			.scale span {
+				position: absolute;
+				transform: translateX(-50%);
+				white-space: nowrap;
+			}
+			
+			.scale span:first-child {
+				transform: none;
+			}
+			
+			.scale span:last-child {
+				transform: translateX(-100%);
+			}
+			
+			.how-img {
+				display: block;
+				width: 100%;
+				height: auto;
+				margin-top: 30px;
+				border: 1px solid var(--line);
+				border-radius: var(--radius);
+			}
+			
+			.cards {
+				display: grid;
+				grid-template-columns: repeat(2, 1fr);
+				gap: 22px;
+				margin-top: 34px;
+			}
+			
+			.steps {
+				grid-template-columns: repeat(3, 1fr);
+				counter-reset: step;
+			}
+			
+			.card {
+				background: #fff;
+				border: 1px solid var(--line);
+				border-radius: var(--radius);
+				padding: 25px;
+			}
+			
+			.card p {
+				color: var(--muted);
+				margin: 0;
+			}
+			
+			.steps .card::before {
+				counter-increment: step;
+				content: counter(step);
+				display: grid;
+				place-items: center;
+				width: 30px;
+				height: 30px;
+				margin-bottom: 14px;
+				border-radius: 50%;
+				background: var(--deep);
+				color: #fff;
+				font-weight: 700;
+				font-size: 0.9rem;
+			}
+			
+			.features .card {
+				transition: transform 0.15s, box-shadow 0.15s;
+			}
+
+			.features .card:hover {
+				transform: translateY(-3px);
+				box-shadow: var(--shadow);
+			}
+			
+			.icon {
+				display: grid;
+				place-items: center;
+				width: 46px;
+				height: 46px;
+				margin-bottom: 16px;
+				border-radius: 12px;
+				background: var(--wash);
+				color: var(--teal-dark);
+			}
+			
+			.icon svg {
+				width: 22px;
+				height: 22px;
+				fill: none;
+				stroke: currentColor;
+				stroke-width: 2;
+				stroke-linecap: round;
+				stroke-linejoin: round;
+			}
+			
+			.dash .split {
+				grid-template-columns: 1fr 1fr;
+			}
+			
+			.dash p {
+				color: #aecbd1;
+			}
+			
+			.map {
+				background: #0e2e37;
+				border: 1px solid #ffffff1a;
+				border-radius: 16px;
+				padding: 16px;
+			}
+			
+			.map svg {
+				display: block;
+				width: 100%;
+				height: auto;
+				border-radius: 10px;
+			}
+			
+			.legend {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 18px;
+				margin-top: 12px;
+				font-size: 0.8rem;
+				color: #9fc0c7;
+			}
+			
+			.legend i {
+				display: inline-block;
+				width: 10px;
+				height: 10px;
+				margin-right: 6px;
+				border-radius: 50%;
+			}
+			
+			.safe {
+				fill: var(--safe);
+				background: var(--safe);
+			}
+			
+			.rising {
+				fill: var(--warn);
+				background: var(--warn);
+			}
+			
+			.threat {
+				fill: var(--threat);
+				background: var(--threat);
+			}
+			
+			.note {
+				max-width: 68ch;
+				margin: 0 auto;
+				border-left: 4px solid var(--teal);
+				padding: 6px 0 6px 26px;
+			}
+			
+			.note p:not(.label) {
+				font-size: 1.12rem;
+			}
+			
+			.note .sign {
+				color: var(--muted);
+				font-size: 0.95rem;
+				font-style: italic;
+				margin-top: 18px;
+			}
+			
+			.cta {
+				background: var(--teal);
+				color: #fff;
+				text-align: center;
+			}
+			
+			.cta p,
+			.cta .label {
+				color: #d9f3f5;
+			}
+			
+			form {
+				display: flex;
+				flex-wrap: wrap;
+				justify-content: center;
+				gap: 10px;
+				max-width: 450px;
+				margin: 22px auto 0;
+			}
+			
+			input {
+				flex: 1;
+				min-width: 220px;
+				padding: 14px 16px;
+				border: 0;
+				border-radius: 9px;
+				font: inherit;
+			}
+			
+			#msg {
+				margin-top: 14px;
+				font-weight: 600;
+				min-height: 1.2em;
+			}
+			
+			.intro {
+				color: var(--muted);
+				max-width: 60ch;
+			}
+			
+			.team {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 22px 40px;
+				margin-top: 30px;
+			}
+			
+			.team strong,
+			.team small {
+				display: block;
+			}
+			
+			.team small {
+				color: var(--muted);
+			}
+			
+			footer {
+				background: var(--deep);
+				color: #9fc0c7;
+				padding: 46px 0 30px;
+				font-size: 0.92rem;
+			}
+			
+			footer a {
+				color: #cfe2e5;
+			}
+			
+			footer h3 {
+				color: #fff;
+				margin: 0 0 8px;
+				font-size: 0.95rem;
+			}
+			
+			.foot {
+				display: flex;
+				flex-wrap: wrap;
+				justify-content: space-between;
+				gap: 30px;
+			}
+			
+			.foot div {
+				max-width: 300px;
+			}
+			
+			.privacy {
+				font-size: 0.82rem;
+				max-width: 62ch;
+				margin-top: 18px;
+			}
+			
+			.copy {
+				border-top: 1px solid #ffffff1a;
+				margin-top: 26px;
+				padding-top: 16px;
+			}
+			
+			@media (max-width: 820px) {
+				.split,
+				.dash .split,
+				.cards {
+					grid-template-columns: 1fr;
+				}
+				
+				nav a {
+					margin-left: 14px;
+					font-size: 0.94rem;
+				}
+			}
+			
+			@media (max-width: 560px) {
+				nav a:not(.btn) {
+					display: none;
+				}
+				
+				nav .btn {
+					padding: 10px 16px;
+					font-size: 0.92rem;
+				}
+			}
+		</style>
+	</head>
+
+	<body>
+		<header>
+			<div class="wrap nav">
+				<span class="brand">
+					<span class="mark"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round">
+						<path d="M4 15h16M8 11v4M12 8v7M16 11v4"/>
+					</svg></span>
+					DrainWatch
+				</span>
+				<nav>
+					<a href="#how">How it works</a>
+					<a href="#features">Features</a>
+					<a href="#councils">For councils</a>
+					<a href="#waitlist" class="btn">Join waitlist</a>
+				</nav>
+			</div>
+		</header>
+
+		<section class="hero">
+			<div class="wrap split">
+				<div>
+					<p class="label">FLOOD EARLY-WARNING · COLOMBO</p>
+					<h1>Know the water is rising before it reaches your door.</h1>
+					<p class="sub">
+						DrainWatch keeps an eye on the water in drains and canals, and warns residents and
+						councils as soon as it starts climbing toward danger.
+					</p>
+					<div class="actions">
+						<a href="#waitlist" class="btn">Join the waitlist</a>
+						<a href="#how" class="btn ghost">How it works</a>
+					</div>
+				</div>
+				<div class="reader" role="img" aria-label="Sensor DW-001 at the Dehiwala canal reads 42 centimetres, status Warning.">
+					<div class="reader-top"><b>DW-001</b><span>Dehiwala canal · 2s ago</span></div>
+					<div class="reading">
+						<span class="num">42</span><span class="unit">cm</span><span class="tag">Warning</span>
+					</div>
+					<div class="bar"><span></span></div>
+					<div class="scale">
+						<span style="left: 0">0</span><span style="left: 40%">Warning 40</span><span style="left: 70%">Threat 70</span><span style="left: 100%">100</span>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<section>
+			<div class="wrap">
+				<p class="label">THE PROBLEM</p>
+				<h2>A drain blocks quietly. The flood arrives all at once.</h2>
+				<p>
+					In Colombo's low-lying neighbourhoods, a clogged drain gives no warning. In monsoon rain
+					the water can go from ankle to waist in minutes, and by then homes and shops are already
+					flooding. Councils have no live view of which drains are filling up or blocked.
+				</p>
+				<p>
+					For a family on the ground floor, those few minutes decide whether they get the fridge
+					onto bricks, move the car to higher ground and get the kids upstairs, or just watch it
+					happen.
+				</p>
+			</div>
+		</section>
+
+		<section class="wash">
+			<div class="wrap">
+				<div class="note">
+					<p class="label">WHY WE STARTED</p>
+					<h2>This started with a flooded street, not a spreadsheet.</h2>
+					<p>
+						Every monsoon, the roads near our campus flood after one heavy afternoon of rain. The
+						drains had been blocked for weeks, and nobody noticed until the water was in the street.
+					</p>
+					<p>
+						We're students, not a big company. We just think nobody should find out about a flood
+						when it's already coming in under the door.
+					</p>
+					<p class="sign">— Team Flood Force</p>
+				</div>
+			</div>
+		</section>
+
+		<section id="how">
+			<div class="wrap">
+				<p class="label">HOW IT WORKS</p>
+				<h2>Two thresholds, read straight from the drain.</h2>
+				<img class="how-img" src="image.jpg" alt="Cutaway of a street drain with DrainWatch sensors mounted above the water." width="1376" height="768" loading="lazy">
+				<div class="cards steps">
+					<div class="card">
+						<h3>Sense</h3>
+						<p>
+							A sealed sensor in the drain keeps reading the water level and checks it against a
+							warning level and a threat level.
+						</p>
+					</div>
+					<div class="card">
+						<h3>Warn</h3>
+						<p>
+							At the warning level, residents and the council get a notification. At the threat
+							level, a siren goes off and an evacuation alert goes out.
+						</p>
+					</div>
+					<div class="card">
+						<h3>Act</h3>
+						<p>
+							The dashboard shows which drains are rising or draining slowly, so crews can clear the
+							real problem first.
+						</p>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<section id="features" class="wash">
+			<div class="wrap">
+				<p class="label">WHAT IT DOES</p>
+				<h2>Built for the street.</h2>
+				<div class="cards features">
+					<div class="card">
+						<span class="icon"><svg viewBox="0 0 24 24">
+							<path d="M4 16h4l2 4 3-14 2.5 8H20"/>
+						</svg></span>
+						<h3>Two-stage warnings</h3>
+						<p>
+							A notification when the water starts rising, then a louder evacuation alarm if it hits
+							the danger level.
+						</p>
+					</div>
+					<div class="card">
+						<span class="icon"><svg viewBox="0 0 24 24">
+							<path d="M12 3v7M8 7l4 3 4-3M5 15c3 2 11 2 14 0M5 19c3 2 11 2 14 0"/>
+						</svg></span>
+						<h3>Blocked-drain detection</h3>
+						<p>
+							If a drain empties slowly after the rain, we flag it as a likely blockage before it
+							floods.
+						</p>
+					</div>
+					<div class="card">
+						<span class="icon"><svg viewBox="0 0 24 24">
+							<path d="M12 21s-7-5.2-7-11a7 7 0 0 1 14 0c0 5.8-7 11-7 11Z"/>
+							<circle cx="12" cy="10" r="2.4"/>
+						</svg></span>
+						<h3>Live risk map</h3>
+						<p>
+							Every sensor knows where it is, so councils can see the high-risk spots and send crews
+							where they're needed.
+						</p>
+					</div>
+					<div class="card">
+						<span class="icon"><svg viewBox="0 0 24 24">
+							<path d="M16 20v-1.5a3.5 3.5 0 0 0-3.5-3.5h-5A3.5 3.5 0 0 0 4 18.5V20M10 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/>
+						</svg></span>
+						<h3>Community reports</h3>
+						<p>
+							Residents can report blocked drains and earn points when they're right, which helps
+							crews get there faster.
+						</p>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<section id="councils" class="hero dash">
+			<div class="wrap split">
+				<div>
+					<p class="label">FOR COUNCILS</p>
+					<h2>One screen for every drain in the ward.</h2>
+					<p>
+						The dashboard puts every drain in the area on one map. Green is clear, amber is rising
+						and red has crossed the threat level, so the duty officer can see the whole ward at a
+						glance.
+					</p>
+				</div>
+				<div class="map">
+					<svg viewBox="0 0 400 230" role="img" aria-label="Ward map: most drains clear, two rising, one at threat level.">
+						<rect width="400" height="230" fill="#0a2027"/>
+						<path d="M0 70H400M0 150H400M120 0V230M270 0V230" stroke="#1b3b44" stroke-width="2" fill="none"/>
+						<circle class="safe" cx="70" cy="45" r="7"/>
+						<circle class="safe" cx="200" cy="110" r="7"/>
+						<circle class="safe" cx="150" cy="185" r="7"/>
+						<circle class="rising" cx="325" cy="60" r="7"/>
+						<circle class="rising" cx="95" cy="120" r="7"/>
+						<circle class="threat" cx="305" cy="185" r="9"/>
+					</svg>
+					<div class="legend">
+						<span><i class="safe"></i>Clear</span>
+						<span><i class="rising"></i>Rising</span>
+						<span><i class="threat"></i>Threat level</span>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<section id="waitlist" class="cta">
+			<div class="wrap">
+				<p class="label">EARLY ACCESS</p>
+				<h2>Put a sensor on your street.</h2>
+				<p>
+					Join the waitlist and we'll let you know when DrainWatch reaches your area. One email when
+					it's ready, no spam.
+				</p>
+				<form>
+					<input name="email" type="email" placeholder="you@example.com" required aria-label="Email address">
+					<button class="btn light">Join the waitlist</button>
+				</form>
+				<p id="msg" role="status"></p>
+			</div>
+		</section>
+
+		<section class="wash">
+			<div class="wrap">
+				<p class="label">THE TEAM</p>
+				<h2>The people behind DrainWatch</h2>
+				<p class="intro">
+					We're Team Flood Force, five students at IIT. Between classes we're soldering sensors,
+					testing them in buckets of water, and arguing about alert sounds.
+				</p>
+				<div class="team">
+					<div><strong>Sulayman</strong><small>Problem &amp; solution analysis</small></div>
+					<div><strong>Kevin</strong><small>Requirements analysis</small></div>
+					<div><strong>Savindu</strong><small>Requirements analysis</small></div>
+					<div><strong>Sathurjan</strong><small>Prototype building</small></div>
+					<div><strong>Ometh</strong><small>Marketing &amp; IoT analysis</small></div>
+				</div>
+			</div>
+		</section>
+
+		<footer>
+			<div class="wrap">
+				<div class="foot">
+					<div>
+						<h3>DrainWatch</h3>
+						<p>A student project by Team Flood Force at IIT.</p>
+					</div>
+					<div>
+						<h3>Contact</h3>
+						<p>
+							<a href="mailto:olimpous.6@gmail.com">olimpous.6@gmail.com</a><br>One of us reads
+							every email.
+						</p>
+					</div>
+				</div>
+				<p class="privacy">
+					If you join the waitlist, we only use your email to tell you when DrainWatch is available.
+					We never share it.
+				</p>
+				<div class="copy">&copy; <span id="year"></span> DrainWatch · Team Flood Force</div>
+			</div>
+		</footer>
+
+		<script>
+			document.getElementById("year").textContent = new Date().getFullYear();
+
+			const form = document.querySelector("form");
+			const msg = document.getElementById("msg");
+			const button = form.querySelector("button");
+
+			form.addEventListener("submit", async (e) => {
+				e.preventDefault();
+				button.disabled = true;
+				msg.textContent = "Adding you…";
+				try {
+					const res = await fetch("https://formspree.io/f/xljbpwza", {
+						method: "POST",
+						headers: { Accept: "application/json" },
+						body: new FormData(form),
+					});
+					if (!res.ok) throw new Error();
+					msg.textContent = "Thanks, you're on the list! We'll write when DrainWatch reaches your street.";
+					form.reset();
+				} catch {
+					msg.textContent = "Something went wrong. Please try again, or email olimpous.6@gmail.com.";
+				}
+				button.disabled = false;
+			});
+		</script>
+	</body>
+</html>
